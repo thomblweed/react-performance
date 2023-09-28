@@ -2,9 +2,10 @@
 // http://localhost:3000/isolated/exercise/02.js
 
 import * as React from 'react'
-import {getItems} from '../filter-cities'
+// import {getItems} from '../filter-cities'
 import {useCombobox} from '../use-combobox'
-import {useForceRerender} from '../utils'
+import {useAsync, useForceRerender} from '../utils'
+import {getItems} from '../workerized-filter-cities'
 
 function Menu({
   items,
@@ -61,9 +62,15 @@ function App() {
   const [inputValue, setInputValue] = React.useState('')
 
   // 🐨 wrap getItems in a call to `React.useMemo`
-  const allItems = React.useMemo(() => getItems(inputValue), [inputValue])
+  // const allItems = React.useMemo(() => getItems(inputValue), [inputValue])
   // const allItems = getItems(inputValue)
+  const {data: allItems, run} = useAsync({data: [], status: 'pending'})
   const items = allItems.slice(0, 100)
+
+  React.useEffect(() => {
+    run(getItems(inputValue))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputValue, run])
 
   const {
     selectedItem,
